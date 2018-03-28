@@ -1,4 +1,4 @@
-import os, sys, re
+import os, sys, re, requests
 from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 
@@ -17,7 +17,7 @@ def r_predict_ssh():
             'ip': str(input_data["_source"]["int_ip"]),
             'country': input_data["_source"]["geoip"]["country_code3"],
             'provider': input_data["_source"]["geoip"]["as_org"],
-            'invalid_user': input_data["_source"]["invalid_user"],
+            # 'invalid_user': input_data["_source"]["invalid_user"],
             'username': input_data["_source"]["username"],
             'auth_method': input_data["_source"]["type_auth"],
             'success': input_data["_source"]["result"]
@@ -27,7 +27,7 @@ def r_predict_ssh():
         abort(500)
     # check that input_data is complete
     output_data = predict_ssh(r_json)
-    return jsonify(output_data)
+    r = requests.post("http://electropose.fr:6969", json=output_data)
 
 @app.route('/predict/nginx', methods=['POST'])
 def r_predict_nginx():
@@ -51,7 +51,7 @@ def r_predict_nginx():
         abort(500)
     # check that input_data is complete
     output_data = predict_nginx(r_json)
-    return jsonify(output_data)
+    r = requests.post("http://electropose.fr:7070", json=output_data)
 
 
 @app.route('/')
