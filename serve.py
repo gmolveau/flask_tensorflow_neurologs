@@ -43,15 +43,15 @@ def predict_nginx(r_json):
         predictor = tf.contrib.predictor.from_saved_model(NGINX_MODEL_PATH)
         # prepare the inputs
         feature_dict = {
-            'ip': _bytes_feature( r_json['headers.http_x_real_ip'].encode() ),
-            'country': _bytes_feature( r_json[''].encode() ),
-            'provider': _bytes_feature( r_json[''].encode() ),
-            'user_agent': _bytes_feature( r_json[''].encode() ),
-            'method': _bytes_feature( r_json[''].encode() ),
-            'url': _bytes_feature( r_json[''].encode() ),
-            'get_query': _bytes_feature( r_json[''].encode() ),
-            'post_query': _bytes_feature( r_json[''].encode() ),
-            'post_length': _bytes_feature( r_json[''].encode() )
+            'ip': _bytes_feature( r_json['ip'].encode() ),
+            'country': _bytes_feature( r_json['country'].encode() ),
+            'provider': _bytes_feature( r_json['provider'].encode() ),
+            'user_agent': _bytes_feature( r_json['user_agent'].encode() ),
+            'method': _bytes_feature( r_json['method'].encode() ),
+            'url': _bytes_feature( r_json['url'].encode() ),
+            'get_query': _bytes_feature( r_json['get_query'].encode() ),
+            'post_query': _bytes_feature( r_json['post_query'].encode() ),
+            'post_length': _bytes_feature( r_json['post_length'].encode() )
         }
         # Prepare model input
         model_input = tf.train.Example(features=tf.train.Features(feature=feature_dict))
@@ -66,5 +66,13 @@ def predict_nginx(r_json):
         return r_json
 
 
+def _float_feature(value):
+    return tf.train.Feature(cate=tf.train.FloatList(value=[value]))
+
+
 def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
+
+
+def _int64_feature(value):
+    return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
