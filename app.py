@@ -10,6 +10,7 @@ CORS(app)
 @app.route('/predict/ssh', methods=['POST'])
 def r_predict_ssh():
     input_data = request.json
+    print(input_data)
     # check that input_data is complete
     output_data = predict_ssh(input_data)
     return jsonify(output_data)
@@ -17,6 +18,7 @@ def r_predict_ssh():
 @app.route('/predict/nginx', methods=['POST'])
 def r_predict_nginx():
     input_data = request.json
+    print(input_data)
     # check that input_data is complete
     output_data = predict_nginx(input_data)
     return jsonify(output_data)
