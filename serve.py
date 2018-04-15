@@ -1,6 +1,9 @@
 import tensorflow as tf
 import os, numpy, json
 
+from collections import namedtuple
+
+Prediction = namedtuple('Prediction', ['prediction', 'accuracy', 'type'])
 
 SSH_MODEL_PATH = './models/ssh'
 NGINX_MODEL_PATH = './models/nginx'
@@ -29,10 +32,10 @@ def predict_ssh(r_json):
         output_dict = predictor({"inputs": [model_input]})
         # predict -> 0 = bad-hack / 1 = good
         label_index = numpy.argmax(output_dict['scores'])
-        r_json['predict'] = str(label_index)
-        r_json['accuracy'] = str(output_dict['scores'][0][label_index])
-        r_json['type'] = "ssh_tensorflow"
-        return r_json
+        return Prediction(
+            prediction = str(numpy.argmax(output_dict['scores'])),
+            accuracy = str(output_dict['scores'][0][label_index]),
+            type = "ssh_tensorflow")
 
 
 def predict_nginx(r_json):
@@ -60,10 +63,10 @@ def predict_nginx(r_json):
         output_dict = predictor({"inputs": [model_input]})
         # predict -> 0 = bad-hack / 1 = good
         label_index = numpy.argmax(output_dict['scores'])
-        r_json['predict'] = str(label_index)
-        r_json['accuracy'] = str(output_dict['scores'][0][label_index])
-        r_json["type"] = "nginx_tensorflow"
-        return r_json
+        return Prediction(
+            prediction = str(label_index),
+            accuracy = str(output_dict['scores'][0][label_index]),
+            type = "ssh_tensorflow")
 
 
 def _float_feature(value):

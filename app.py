@@ -9,49 +9,118 @@ CORS(app)
 
 @app.route('/predict/ssh', methods=['POST'])
 def r_predict_ssh():
+    """gets a custom SSH log and sends back a predicted one
+
+    gets a enriched SSH log from logstash, slice the json to get the needed part
+    give it to the tensorflow model, then sends the original log + prediction
+
+    Decorators:
+        app.route
+    """
     input_data = request.json
-    print(input_data)
-    # TODO : gérer les champs non-présents
-    try:
-        r_json = {
-            'ip': str(input_data["_source"]["int_ip"]),
-            'country': input_data["_source"]["geoip"]["country_code3"],
-            'provider': input_data["_source"]["geoip"]["as_org"],
-            # 'invalid_user': input_data["_source"]["invalid_user"],
-            'username': input_data["_source"]["username"],
-            'auth_method': input_data["_source"]["type_auth"],
-            'success': input_data["_source"]["result"]
-        }
-    except:
-        print("json illegal")
-        abort(500)
+
+    _geoip = input_data.get("_source", {}).get("geoip", {})
+    if not _geoip:
+        return "error geoip"
+
+    _ip = input_data.get("_source", {}).get("int_ip", -1)
+
+    _country = _geoip.get("country_code3", -1)
+
+    _provider = _geoip.get("as_org", "")
+
+    _username = input_data.get("_source", {}).get("username", "")
+
+    _invalid_user = input_data.get("_source", {}).get("invalid_user", "")
+
+    _type_auth = input_data.get("_source", {}).get("type_auth", "")
+
+    _result = input_data.get("_source", {}).get("result", "")
+
+    r_json = {
+        'ip': str(_ip),
+        'country': _country,
+        'provider': _provider,
+        'invalid_user': _invalid_user,
+        'username': _username,
+        'auth_method': _type_auth,
+        'success': _result
+    }
+
     # check that input_data is complete
-    output_data = predict_ssh(r_json)
-    r = requests.post("http://electropose.fr:6969", json=output_data)
+    p = predict_ssh(r_json)
+    input_data['predict'] = p.prediction
+    input_data['accuracy'] = p.accuracy
+    input_data['type'] = p.type
+    try:
+        r = requests.post("http://electropose.fr:6969", json=input_data)
+    except Exception as e:
+        print(e)
+    return jsonify(input_data)
 
 @app.route('/predict/nginx', methods=['POST'])
 def r_predict_nginx():
+    """gets a custom NGINX log and sends back a predicted one
+
+    gets a enriched nginx log from logstash, slice the json to get the needed part
+    give it to the tensorflow model, then sends the original log + prediction
+
+    Decorators:
+        app.route
+    """
     input_data = request.json
-    print(input_data)
-    # TODO : gérer les champs non-présents
-    try:
-        r_json = {
-            'ip': input_data["_source"]["headers"]["http_x_real_ip"],
-            'country': input_data["_source"]["geoip"]["country_code3"],
-            'provider': str(input_data["_source"]["geoip"]["asn"]),
-            'user_agent': input_data["_source"]["headers"]["http_user_agent"],
-            'method': input_data["_source"]["headers"]["request_method"],
-            'url': re.sub("^http://electropose.fr","",input_data["_source"]["headers"]["http_referer"]),
-            'get_query': re.sub("^/mirror","",input_data["_source"]["headers"]["request_uri"]),
-            'post_query': input_data["_source"]["message"],
-            'post_length': str(input_data["_source"]["message_length"])
-        }
-    except:
-        print("json illegal")
-        abort(500)
+
+    _headers = input_data.get("_source", {}).get("headers", {})
+    if not _headers:
+        return "error headers"
+
+    _geoip = input_data.get("_source", {}).get("geoip", {})
+    if not _geoip:
+        return "error geoip"
+
+    _ip = _headers.get("http_x_real_ip", "")
+    if _ip is "":
+        return "error ip"
+
+    _user_agent = _headers.get("http_user_agent", "")
+
+    _method = _headers.get("request_method", "")
+
+    _referer = _headers.get("http_referer", "")
+    _url = re.sub("^http://electropose.fr", "", _referer)
+
+    _request_uri = _headers.get("request_uri", "")
+    _get_query = re.sub("^/mirror", "", _request_uri),
+
+    _country = _geoip.get("country_code3", -1)
+
+    _provider = _geoip.get("asn", "")
+
+    _post_query = input_data.get("_source", {}).get("message", "")
+
+    _post_length = input_data.get("_source", {}).get("message_length", "0")
+
+    r_json = {
+        'ip': _ip,
+        'country': _country,
+        'provider': str(_provider),
+        'user_agent': _user_agent,
+        'method': _method,
+        'url': _url,
+        'get_query': _get_query,
+        'post_query': _post_query,
+        'post_length': str(_post_length)
+    }
     # check that input_data is complete
-    output_data = predict_nginx(r_json)
-    r = requests.post("http://electropose.fr:7070", json=output_data)
+    p = predict_nginx(r_json)
+    input_data['predict'] = p.prediction
+    input_data['accuracy'] = p.accuracy
+    input_data['type'] = p.type
+    try:
+        r = requests.post("http://electropose.fr:7070", json=input_data)
+    except Exception as e:
+        print(e)
+    return jsonify(input_data)
 
 
 @app.route('/')
