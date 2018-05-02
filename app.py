@@ -19,23 +19,23 @@ def r_predict_ssh():
     """
     input_data = request.json
 
-    _geoip = input_data.get("_source", {}).get("geoip", {})
-    if not _geoip:
-        return "error geoip"
+    _ip = input_data.get("int_ip", -1)
 
-    _ip = input_data.get("_source", {}).get("int_ip", -1)
+    _geoip = input_data.get("geoip", {})
+    if not _geoip:
+        return jsonify(error="error geoip"),400
 
     _country = _geoip.get("country_code3", -1)
 
     _provider = _geoip.get("as_org", "")
 
-    _username = input_data.get("_source", {}).get("username", "")
+    _username = input_data.get("username", "")
 
-    _invalid_user = input_data.get("_source", {}).get("invalid_user", "")
+    _invalid_user = input_data.get("invalid_user", "")
 
-    _type_auth = input_data.get("_source", {}).get("type_auth", "")
+    _type_auth = input_data.get("type_auth", "")
 
-    _result = input_data.get("_source", {}).get("result", "")
+    _result = input_data.get("result", "")
 
     r_json = {
         'ip': str(_ip),
@@ -70,11 +70,11 @@ def r_predict_nginx():
     """
     input_data = request.json
 
-    _headers = input_data.get("_source", {}).get("headers", {})
+    _headers = input_data.get("headers", {})
     if not _headers:
         return "error headers"
 
-    _geoip = input_data.get("_source", {}).get("geoip", {})
+    _geoip = input_data.get("geoip", {})
     if not _geoip:
         return "error geoip"
 
@@ -96,9 +96,9 @@ def r_predict_nginx():
 
     _provider = _geoip.get("asn", "")
 
-    _post_query = input_data.get("_source", {}).get("message", "")
+    _post_query = input_data.get("message", "")
 
-    _post_length = input_data.get("_source", {}).get("message_length", "0")
+    _post_length = input_data.get("message_length", "0")
 
     r_json = {
         'ip': _ip,
