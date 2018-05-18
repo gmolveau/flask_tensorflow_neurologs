@@ -27,11 +27,12 @@ def r_predict_ssh():
 
     _country = _geoip.get("country_code3", -1)
 
-    _provider = _geoip.get("as_org", "")
+    _provider = _geoip.get("as_org", -1)
 
     _username = input_data.get("username", "")
 
     _invalid_user = input_data.get("invalid_user", "")
+    _invalid_user_int = 1 if _invalid_user is "invalid user" else 0
 
     _type_auth = input_data.get("type_auth", "")
 
@@ -39,9 +40,9 @@ def r_predict_ssh():
 
     r_json = {
         'ip': str(_ip),
-        'country': _country,
-        'provider': _provider,
-        'invalid_user': _invalid_user,
+        'country': str(_country),
+        'provider': str(_provider),
+        'invalid_user': str(_invalid_user_int),
         'username': _username,
         'auth_method': _type_auth,
         'success': _result
@@ -90,15 +91,15 @@ def r_predict_nginx():
     _url = re.sub("^http://electropose.fr", "", _referer)
 
     _request_uri = _headers.get("request_uri", "")
-    _get_query = re.sub("^/mirror", "", _request_uri),
+    _get_query = re.sub("^/mirror", "", _request_uri)
 
     _country = _geoip.get("country_code3", -1)
 
-    _provider = _geoip.get("asn", "")
+    _provider = _geoip.get("asn", -1)
 
     _post_query = input_data.get("message", "")
 
-    _post_length = input_data.get("message_length", "0")
+    _post_length = input_data.get("message_length", 0)
 
     r_json = {
         'ip': _ip,

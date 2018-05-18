@@ -66,7 +66,7 @@ def predict_nginx(r_json):
         return Prediction(
             prediction = str(label_index),
             accuracy = str(output_dict['scores'][0][label_index]),
-            type = "ssh_tensorflow")
+            type = "nginx_tensorflow")
 
 
 def _float_feature(value):
